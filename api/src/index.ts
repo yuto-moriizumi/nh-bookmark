@@ -1,8 +1,9 @@
 import express, { json } from "express";
 import cors from "cors";
-import { GlossaryEntries, Translator } from "deepl-node";
-import { ApiRequest, ApiResponse } from "common";
-import { decode, encode } from "./utils";
+import { SubscriptionModel } from "./model/Subscription";
+import { aws } from "dynamoose";
+import { validateEnv } from "@volgakurvar/vaidate-env";
+import { str } from "envalid";
 
 const app = express();
 
@@ -14,60 +15,49 @@ app.get("/", (_, res) => {
 app.use(json());
 app.use(cors());
 
-app.post<object, ApiResponse, ApiRequest>(
-  "/translate",
+app.use(async (_, res, next) => {
+  const env = validateEnv({
+    DB_ACCESS_KEY_ID: str(),
+    DB_SECRET_ACCESS_KEY: str(),
+  });
+  if (env instanceof Error) return env;
+  const ddb = new aws.ddb.DynamoDB({
+    credentials: {
+      accessKeyId: env.DB_ACCESS_KEY_ID,
+      secretAccessKey: env.DB_SECRET_ACCESS_KEY,
+    },
+    region: "ap-northeast-1",
+  });
+  aws.ddb.set(ddb);
+  next();
+});
+
+app.get("/subscriptions", async (req, res) => {
+  const subscriptions = await SubscriptionModel.scan().exec();
+  res.status(200).json({ subscriptions });
+});
+
+app.post("/subscriptions", async (req, res) => {
+  const subscription = new SubscriptionModel(req.body);
+  await subscription.save();
+  res.status(200).send(subscription);
+});
+
+app.post<object, object, { url: string; rank?: number; has_new?: boolean }>(
+  "/subscriptions/patch",
   async ({ body }, res) => {
-    const translator = new Translator(process.env.DEEPL_KEY ?? "");
-    const glossaries = await translator.listGlossaries();
-    const glossary = glossaries.length > 0 ? glossaries[0] : undefined;
-
-    async function translate(input: string) {
-      const { text } = await translator.translateText(input, "ja", "en-US", {
-        glossary,
-        tagHandling: "html",
-        splitSentences: "on",
-      });
-      return text;
-    }
-
-    if (body.isAdjectiveCountryName) {
-      const text = await translate(`<p><span>${body.text}</span>国籍</p>`);
-      const adjective = text.match(/<span>(.+)<\/span>/)?.[1] ?? text;
-      res.send({ text: adjective });
-    } else {
-      const text = decode(await translate(encode(body.text)));
-      res.send({ text: text[0].toUpperCase() + text.slice(1) });
-    }
+    const subscription = await SubscriptionModel.get(body.url);
+    subscription.rank = body.rank ?? subscription.rank;
+    subscription.has_new = body.has_new ?? subscription.has_new;
+    await subscription.save();
+    res.status(200).send(subscription);
   },
 );
 
-type ParatranzTerms = { results: { term: string; translation: string }[] };
-
-// 登録済み辞書全てを削除し、新しい辞書を登録する
-app.post("/glossaries", async (req, res) => {
-  const translator = new Translator(process.env.DEEPL_KEY ?? "");
-  const glossaries = await translator.listGlossaries();
-  await Promise.all(
-    glossaries.map((glossary) => translator.deleteGlossary(glossary)),
-  );
-
-  const terms = (await (
-    await fetch(
-      "https://paratranz.cn/api/projects/1511/terms?page=1&pageSize=500",
-    )
-  ).json()) as ParatranzTerms;
-
-  await translator.createGlossary(
-    "SSW",
-    "ja",
-    "en",
-    new GlossaryEntries({
-      entries: Object.fromEntries(
-        terms.results.map((term) => [term.term, term.translation]),
-      ),
-    }),
-  );
-  res.status(201).send();
+app.post("/subscriptions/delete", async (req, res) => {
+  const subscription = await SubscriptionModel.get(req.body.url);
+  await subscription.delete();
+  res.status(204).end();
 });
 
 app.use((_, res) => {

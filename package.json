@@ -1,6 +1,6 @@
 {
-  "name": "paratranz-helper",
-  "version": "1.5.0",
+  "name": "nh-bookmark",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "author": "",
@@ -10,12 +10,16 @@
     "typecheck": "npm run typecheck --workspaces"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
     "eslint": "^8.57.0",
-    "prettier": "^3.1.1"
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.4.5"
   },
   "workspaces": [
     "api",
-    "front",
-    "common"
+    "front"
   ]
 }

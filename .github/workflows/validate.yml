@@ -14,5 +14,3 @@ jobs:
         run: npm run typecheck
       - name: Check lint
         run: npm run lint
-      - name: Test
-        run: npm test -w api
