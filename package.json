@@ -1,0 +1,21 @@
+{
+  "name": "paratranz-helper",
+  "version": "1.5.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "typecheck": "npm run typecheck --workspaces"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.1.1"
+  },
+  "workspaces": [
+    "api",
+    "front",
+    "common"
+  ]
+}

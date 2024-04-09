@@ -1,0 +1,27 @@
+﻿service: paratranz-helper
+frameworkVersion: "3"
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-northeast-1
+  timeout: 15
+  httpApi:
+    cors: true
+  environment:
+    DEEPL_KEY: ${env:DEEPL_KEY}
+
+functions:
+  api:
+    handler: main.handler
+    events:
+      - httpApi: "*"
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+custom:
+  webpack:
+    webpackConfig: webpack.config.ts
