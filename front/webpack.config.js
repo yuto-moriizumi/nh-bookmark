@@ -10,7 +10,11 @@ module.exports = () => {
     // Paratranz doesn't allow eval by its CSP
     devtool:
       process.env.TARGET === "dev" ? "cheap-module-source-map" : undefined,
-    entry: { popup: "./src/popup.ts", index: "./src/index.ts" },
+    entry: {
+      popup: "./src/popup.ts",
+      index: "./src/index.ts",
+      background: "./src/background.ts",
+    },
     output: {
       path: path.join(__dirname, "build"),
       filename: "[name].js",
@@ -36,6 +40,7 @@ module.exports = () => {
             "logo32.png",
             "index.html",
             "popup.html",
+            "rule1.json",
           ].map((name) => ({
             from: "src/" + name,
             to: name,
