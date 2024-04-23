@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Subscription } from "./component";
+import { Subscription } from "./types";
 
 const TAG_JAPANESE = "6346";
 
