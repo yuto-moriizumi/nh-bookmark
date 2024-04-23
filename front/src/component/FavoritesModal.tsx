@@ -5,6 +5,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { updateSubscription } from "../util";
 import { Subscription, SubscriptionResponce } from "../types";
 import { queryClient, client } from ".";
+import { useEffect, useState } from "react";
 
 async function getSubscriptions() {
   const res = await client.get<SubscriptionResponce>("/subscriptions");
@@ -41,6 +42,16 @@ export function FavoritesModal(props: { open: boolean; onClose: () => void }) {
     queryKey: ["subscriptions"],
     queryFn: getSubscriptions,
   });
+  const [isAutoUpdateInitiated, setIsAutoUpdateInitiated] = useState(false);
+  useEffect(() => {
+    if (isAutoUpdateInitiated || !data) return;
+    setIsAutoUpdateInitiated(true);
+    (async () => {
+      for (let i = 0; i < data.length; i++) {
+        await update(data);
+      }
+    })();
+  }, [data, isAutoUpdateInitiated]);
 
   return (
     <Modal {...props} sx={{ overflowY: "scroll" }}>
