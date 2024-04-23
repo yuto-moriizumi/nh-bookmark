@@ -4,13 +4,9 @@ import { useState } from "react";
 import { Modal } from "./Modal";
 import { MutationSnackbar } from "./MutationSnackbar";
 import { DEFAULT_RANK } from "./SubscriptionCard";
-import {
-  queryClient,
-  OptionalSubscription,
-  Subscription,
-  lambdaClient,
-} from ".";
+import { queryClient, client } from ".";
 import { updateSubscription } from "../util";
+import { OptionalSubscription, Subscription } from "../types";
 
 type Props = {
   open: boolean;
@@ -38,7 +34,7 @@ export const AddSubscriptionModal = (props: Props) => {
         (prev) => (prev ? [...prev, subscription] : prev),
       );
       props.onClose();
-      return lambdaClient.post<Subscription>("/subscriptions", subscription);
+      return client.post<Subscription>("/subscriptions", subscription);
     },
   });
   return (

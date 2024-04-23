@@ -12,14 +12,10 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { Modal } from "./Modal";
-import {
-  OptionalSubscription,
-  Subscription,
-  queryClient,
-  vercelClient,
-} from ".";
+import { queryClient, client } from ".";
 import { useMutation } from "@tanstack/react-query";
 import { MutationSnackbar } from "./MutationSnackbar";
+import { OptionalSubscription, Subscription } from "../types";
 
 export const DEFAULT_RANK = 3;
 
@@ -44,7 +40,7 @@ export const SubscriptionCard = (props: Props) => {
 
   const updateRank = useMutation({
     mutationFn: (rank: number) =>
-      vercelClient.post<Subscription>("/subscriptions/patch", {
+      client.post<Subscription>("/subscriptions/patch", {
         url: sub_url,
         rank,
       }),
@@ -52,15 +48,14 @@ export const SubscriptionCard = (props: Props) => {
   });
   const updateNew = useMutation({
     mutationFn: (hasNew: boolean) =>
-      vercelClient.post<Subscription>("/subscriptions/patch", {
+      client.post<Subscription>("/subscriptions/patch", {
         url: sub_url,
         has_new: hasNew,
       }),
     onSuccess: updateSubscription,
   });
   const deleteSubscription = useMutation({
-    mutationFn: () =>
-      vercelClient.post("/subscriptions/delete", { url: sub_url }),
+    mutationFn: () => client.post("/subscriptions/delete", { url: sub_url }),
     onSuccess: () => {
       queryClient.setQueryData<OptionalSubscription[]>(
         ["subscriptions"],
