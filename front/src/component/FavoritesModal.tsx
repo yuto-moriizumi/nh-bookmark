@@ -11,11 +11,37 @@ async function getSubscriptions() {
   return res.data.subscriptions;
 }
 
+const updating = new Set<string>();
+
+async function update(data: Subscription[] | undefined) {
+  if (!data) return;
+  const minUpdatedAtItem = data
+    .filter((i) => !updating.has(i.sub_url))
+    .reduce(
+      (acc, curr) => (curr.checked_at < acc.checked_at ? curr : acc),
+      data[0],
+    );
+  updating.add(minUpdatedAtItem.sub_url);
+  const subscription = await updateSubscription(minUpdatedAtItem);
+  updating.delete(minUpdatedAtItem.sub_url);
+  if (subscription instanceof Error) throw subscription;
+  queryClient.setQueryData<Subscription[]>(["subscriptions"], (prev) =>
+    prev
+      ? [
+          ...prev.filter((s) => s.sub_url !== subscription.sub_url),
+          subscription,
+        ]
+      : prev,
+  );
+  return client.post<Subscription>("/subscriptions", subscription);
+}
+
 export function FavoritesModal(props: { open: boolean; onClose: () => void }) {
   const { data } = useQuery({
     queryKey: ["subscriptions"],
     queryFn: getSubscriptions,
   });
+
   return (
     <Modal {...props} sx={{ overflowY: "scroll" }}>
       <>
@@ -36,26 +62,7 @@ export function FavoritesModal(props: { open: boolean; onClose: () => void }) {
             bottom: "5px",
             right: "5px",
           }}
-          onClick={async () => {
-            if (!data) return;
-            const minUpdatedAtItem = data.reduce(
-              (acc, curr) => (curr.checked_at < acc.checked_at ? curr : acc),
-              data[0],
-            );
-            const subscription = await updateSubscription(minUpdatedAtItem);
-            if (subscription instanceof Error) throw subscription;
-            queryClient.setQueryData<Subscription[]>(
-              ["subscriptions"],
-              (prev) =>
-                prev
-                  ? [
-                      ...prev.filter((s) => s.sub_url !== subscription.sub_url),
-                      subscription,
-                    ]
-                  : prev,
-            );
-            return client.post<Subscription>("/subscriptions", subscription);
-          }}
+          onClick={() => update(data)}
         >
           <RefreshIcon />
           <Typography>Update</Typography>
