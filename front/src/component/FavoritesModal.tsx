@@ -28,10 +28,7 @@ async function update(data: Subscription[] | undefined) {
   if (subscription instanceof Error) throw subscription;
   queryClient.setQueryData<Subscription[]>(["subscriptions"], (prev) =>
     prev
-      ? [
-          ...prev.filter((s) => s.sub_url !== subscription.sub_url),
-          subscription,
-        ]
+      ? prev.map((s) => (s.sub_url === subscription.sub_url ? subscription : s))
       : prev,
   );
   return client.post<Subscription>("/subscriptions", subscription);
