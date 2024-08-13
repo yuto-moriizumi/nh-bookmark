@@ -60,8 +60,8 @@ export const SubscriptionCard = (props: Props) => {
       queryClient.setQueryData<OptionalSubscription[]>(
         ["subscriptions"],
         (prev) => (prev ? prev.filter((s) => s.sub_url !== sub_url) : prev),
-      ),
-        setIsModalOpen(false);
+      );
+      setIsModalOpen(false);
     },
   });
   return (
