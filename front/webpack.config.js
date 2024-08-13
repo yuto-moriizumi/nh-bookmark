@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 const ZipPlugin = require("zip-webpack-plugin");
@@ -9,8 +9,7 @@ module.exports = () => {
   return {
     mode: process.env.TARGET === "dev" ? "development" : "production",
     watch: process.env.TARGET === "dev",
-    devtool:
-      process.env.TARGET === "dev" ? "eval" : undefined,
+    devtool: process.env.TARGET === "dev" ? "eval" : undefined,
     entry: { index: "./src/index.ts" },
     output: {
       path: path.join(__dirname, "build"),
