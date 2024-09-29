@@ -7,6 +7,8 @@ import { Subscription, SubscriptionResponce } from "../types";
 import { queryClient, client } from ".";
 import { useEffect, useState } from "react";
 
+const UPDATE_INTERVAL_MS = 500;
+
 async function getSubscriptions() {
   const res = await client.get<SubscriptionResponce>("/subscriptions");
   return res.data.subscriptions;
@@ -46,6 +48,7 @@ export function FavoritesModal(props: { open: boolean; onClose: () => void }) {
     (async () => {
       for (let i = 0; i < data.length; i++) {
         await update(data);
+        await new Promise((resolve) => setTimeout(resolve, UPDATE_INTERVAL_MS));
       }
     })();
   }, [data, isAutoUpdateInitiated]);
