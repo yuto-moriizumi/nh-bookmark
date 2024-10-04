@@ -7,7 +7,7 @@ import { Subscription, SubscriptionResponce } from "../types";
 import { queryClient, client } from ".";
 import { useEffect, useState } from "react";
 
-const UPDATE_INTERVAL_MS = 500;
+const UPDATE_INTERVAL_MS = 1000;
 
 async function getSubscriptions() {
   const res = await client.get<SubscriptionResponce>("/subscriptions");
