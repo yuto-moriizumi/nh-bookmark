@@ -8,8 +8,8 @@ import { queryClient, client } from ".";
 import { useEffect, useState } from "react";
 
 const UPDATE_INTERVAL_MS = 1000;
-/** Update once an hour */
-const SKIP_UPDATE_THRESHOLD = 1000 * 60 * 60;
+/** Check once an hour */
+const SKIP_CHECK_THRESHOLD = 1000 * 60 * 60;
 
 async function getSubscriptions() {
   const res = await client.get<SubscriptionResponce>("/subscriptions");
@@ -26,7 +26,7 @@ async function update(data: Subscription[] | undefined) {
       (acc, curr) => (curr.checked_at < acc.checked_at ? curr : acc),
       data[0],
     );
-  if (Date.now() - minUpdatedAtItem.updated_at < SKIP_UPDATE_THRESHOLD) return;
+  if (Date.now() - minUpdatedAtItem.checked_at < SKIP_CHECK_THRESHOLD) return;
   updating.add(minUpdatedAtItem.sub_url);
   const subscription = await updateSubscription(minUpdatedAtItem);
   updating.delete(minUpdatedAtItem.sub_url);
