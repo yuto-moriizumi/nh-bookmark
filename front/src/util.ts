@@ -32,8 +32,16 @@ export async function updateSubscription(subscription: Subscription) {
     // 本のページを開く
     const document = await getDocument(bookUrl);
     if (document instanceof Error) return document;
+
     //タイトルを取得
-    const title = document.querySelector("h2.title span.pretty")?.textContent;
+    const japaneseTitle = document.querySelector(
+      "h2.title span.pretty",
+    )?.textContent;
+    const englishTitle = document.querySelector(
+      "h1.title span.pretty",
+    )?.textContent;
+    const title = japaneseTitle ?? englishTitle;
+
     // タイトルが同一であれば更新がないものと扱う
     if (title === subscription.title) return updateCheckedAt(subscription);
 
