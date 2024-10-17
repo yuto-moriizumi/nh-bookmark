@@ -9,7 +9,7 @@
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.13",
     "jest": "^29.7.0",
-    "serverless-offline": "^14.3.2",
+    "serverless-offline": "^14.3.3",
     "serverless-webpack": "^5.14.2",
     "terser-webpack-plugin": "^5.3.9",
     "ts-jest": "^29.2.5",
