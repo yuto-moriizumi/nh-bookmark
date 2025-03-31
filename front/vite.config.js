@@ -46,6 +46,9 @@ export default defineConfig(({ mode }) => {
         outFileName: 'nh-bookmark.zip'
       })])
     ],
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(mode)
+    },
     build: {
       outDir: 'build',
       emptyOutDir: true,
