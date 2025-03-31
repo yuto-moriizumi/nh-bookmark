@@ -9,7 +9,7 @@ module.exports = () => {
   return {
     mode: process.env.TARGET === "dev" ? "development" : "production",
     watch: process.env.TARGET === "dev",
-    devtool: process.env.TARGET === "dev" ? "eval" : undefined,
+    devtool: process.env.TARGET === "dev" ? "inline-source-map" : undefined,
     entry: { index: "./src/index.ts" },
     output: {
       path: path.join(__dirname, "build"),

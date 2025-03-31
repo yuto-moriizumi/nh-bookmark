@@ -51,8 +51,10 @@ export async function updateSubscription(subscription: Subscription) {
     //情報を更新する
     subscription.name = author ?? "取得失敗";
     subscription.title = title ?? "取得失敗";
-    subscription.image =
-      book.querySelector("img")?.getAttribute("data-src") ?? "undefined";
+    // サブドメインは t1 に統一する
+    subscription.image = (
+      book.querySelector("img")?.getAttribute("data-src") ?? "undefined"
+    ).replace(/https:\/\/t\d+\.([^/]+)/, "https://t1.$1");
     subscription.updated_at = Date.now();
     subscription.work_url = bookUrl;
     subscription.has_new = true;
