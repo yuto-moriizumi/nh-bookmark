@@ -1,9 +1,10 @@
 import { Modal as MuiModal, Container, Paper } from "@mui/material";
+import { ReactNode } from "react";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  children: JSX.Element;
+  children: ReactNode;
 };
 
 export const Modal = ({ open, onClose, children }: Props) => (

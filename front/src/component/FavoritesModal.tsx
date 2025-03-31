@@ -63,7 +63,10 @@ export function FavoritesModal(props: { open: boolean; onClose: () => void }) {
           {(data ?? [])
             .sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))
             .map((s) => (
-              <Grid item key={s.sub_url} xs={24} sm={8} md={6} lg={4} xl={3}>
+              <Grid
+                key={s.sub_url}
+                size={{ xs: 24, sm: 8, md: 6, lg: 4, xl: 3 }}
+              >
                 <SubscriptionCard subscription={s} />
               </Grid>
             ))}
