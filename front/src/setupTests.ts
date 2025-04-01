@@ -2,10 +2,15 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
+import { TextEncoder, TextDecoder } from "util";
+
+// TextEncoder/TextDecoder for JSDOM
+global.TextEncoder = TextEncoder as unknown as typeof global.TextEncoder;
+global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder;
 
 // Mock the document.URL property
-Object.defineProperty(window, 'URL', {
+Object.defineProperty(window, "URL", {
   value: {
     createObjectURL: jest.fn(),
   },
@@ -13,9 +18,9 @@ Object.defineProperty(window, 'URL', {
 
 // Mock document.getElementsByTagName for components that use it
 document.getElementsByTagName = jest.fn().mockImplementation((tagName) => {
-  if (tagName === 'h1') {
+  if (tagName === "h1") {
     return {
-      item: jest.fn().mockReturnValue(document.createElement('h1')),
+      item: jest.fn().mockReturnValue(document.createElement("h1")),
     };
   }
   return {
@@ -24,7 +29,7 @@ document.getElementsByTagName = jest.fn().mockImplementation((tagName) => {
 });
 
 // Mock axios
-jest.mock('axios', () => ({
+jest.mock("axios", () => ({
   create: jest.fn().mockReturnValue({
     get: jest.fn().mockResolvedValue({ data: {} }),
     post: jest.fn().mockResolvedValue({ data: {} }),
@@ -33,8 +38,8 @@ jest.mock('axios', () => ({
 }));
 
 // Mock createPortal
-jest.mock('react-dom', () => {
-  const originalModule = jest.requireActual('react-dom');
+jest.mock("react-dom", () => {
+  const originalModule = jest.requireActual("react-dom");
   return {
     ...originalModule,
     createPortal: jest.fn((element) => element),
@@ -43,11 +48,13 @@ jest.mock('react-dom', () => {
 
 // Mock DOMParser
 global.DOMParser = jest.fn().mockImplementation(() => ({
-  parseFromString: jest.fn().mockReturnValue(document.implementation.createHTMLDocument()),
+  parseFromString: jest
+    .fn()
+    .mockReturnValue(document.implementation.createHTMLDocument()),
 }));
 
 // Set document.URL for tests
-Object.defineProperty(document, 'URL', {
-  value: 'https://example.com/test',
+Object.defineProperty(document, "URL", {
+  value: "https://example.com/test",
   writable: true,
 });

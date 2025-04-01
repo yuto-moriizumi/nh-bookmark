@@ -30,8 +30,8 @@ export async function updateSubscription(subscription: Subscription) {
     );
     if (!book) return updateCheckedAt(subscription);
 
-    const anchor = book.firstChild as HTMLAnchorElement;
-    const bookUrl = anchor.href;
+    const anchor = book.querySelector("a") as HTMLAnchorElement;
+    const bookUrl = anchor?.getAttribute("href") || "";
 
     // 本のページを開く
     const document = await getDocument(bookUrl);
