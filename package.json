@@ -7,7 +7,8 @@
   "license": "ISC",
   "scripts": {
     "lint": "eslint",
-    "typecheck": "npm run typecheck --workspaces"
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm test --workspaces"
   },
   "devDependencies": {
     "eslint": "^9.23.0",

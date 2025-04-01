@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom";
 import { readFileSync } from "fs";
 import { join } from "path";
 import axios from "axios";
@@ -18,10 +19,10 @@ describe("updateSubscription", () => {
     join(__dirname, "./__fixtures__/book.html"),
     "utf8",
   );
-
-  // DOMParserのモックを設定
-  const originalDOMParser = global.DOMParser;
-  let mockDOMParser: jest.Mock;
+  const noJapaneseGalleryHtml = readFileSync(
+    join(__dirname, "./__fixtures__/no_japanese_gallery.html"),
+    "utf8",
+  );
 
   beforeEach(() => {
     // テスト前にモックをリセット
@@ -29,15 +30,9 @@ describe("updateSubscription", () => {
 
     // Date.now()のモックを設定
     jest.spyOn(Date, "now").mockReturnValue(1617235200000); // 2021-04-01T00:00:00.000Z
-
-    // DOMParserのモックを設定
-    mockDOMParser = jest.fn();
-    global.DOMParser = mockDOMParser as unknown as typeof DOMParser;
   });
 
   afterEach(() => {
-    // テスト後に元のDOMParserを復元
-    global.DOMParser = originalDOMParser;
     jest.restoreAllMocks();
   });
 
@@ -64,21 +59,6 @@ describe("updateSubscription", () => {
       }
       return Promise.reject(new Error("Unexpected URL"));
     });
-
-    // DOMParserのモックを設定
-    const mockGalleryDoc = document.implementation.createHTMLDocument();
-    mockGalleryDoc.body.innerHTML = galleryHtml;
-
-    const mockBookDoc = document.implementation.createHTMLDocument();
-    mockBookDoc.body.innerHTML = bookHtml;
-
-    mockDOMParser.mockImplementation(() => ({
-      parseFromString: (html: string) => {
-        if (html === galleryHtml) return mockGalleryDoc;
-        if (html === bookHtml) return mockBookDoc;
-        return null;
-      },
-    }));
 
     // 関数を実行
     const result = await updateSubscription(subscription);
@@ -127,21 +107,6 @@ describe("updateSubscription", () => {
       return Promise.reject(new Error("Unexpected URL:" + url));
     });
 
-    // DOMParserのモックを設定
-    const mockGalleryDoc = document.implementation.createHTMLDocument();
-    mockGalleryDoc.body.innerHTML = galleryHtml;
-
-    const mockBookDoc = document.implementation.createHTMLDocument();
-    mockBookDoc.body.innerHTML = bookHtml;
-
-    mockDOMParser.mockImplementation(() => ({
-      parseFromString: (html: string) => {
-        if (html === galleryHtml) return mockGalleryDoc;
-        if (html === bookHtml) return mockBookDoc;
-        return null;
-      },
-    }));
-
     // 関数を実行
     const result = await updateSubscription(subscription);
 
@@ -169,20 +134,6 @@ describe("updateSubscription", () => {
       has_new: false,
     };
 
-    // 日本語の本がない場合のHTMLを作成
-    const noJapaneseGalleryHtml = `
-      <!DOCTYPE html>
-      <html>
-      <body>
-        <div class="gallery" data-tags="1234 5678">
-          <a href="https://example.com/book/456">
-            <img data-src="https://t3.example.com/galleries/456/thumbnail.jpg" />
-          </a>
-        </div>
-      </body>
-      </html>
-    `;
-
     // axiosのモックを設定
     mockedAxios.get.mockImplementation((url) => {
       if (url === subscription.sub_url) {
@@ -190,17 +141,6 @@ describe("updateSubscription", () => {
       }
       return Promise.reject(new Error("Unexpected URL:" + url));
     });
-
-    // DOMParserのモックを設定
-    const mockGalleryDoc = document.implementation.createHTMLDocument();
-    mockGalleryDoc.body.innerHTML = noJapaneseGalleryHtml;
-
-    mockDOMParser.mockImplementation(() => ({
-      parseFromString: (html: string) => {
-        if (html === noJapaneseGalleryHtml) return mockGalleryDoc;
-        return null;
-      },
-    }));
 
     // 関数を実行
     const result = await updateSubscription(subscription);
@@ -233,13 +173,6 @@ describe("updateSubscription", () => {
     // axiosのモックを設定（エラーを返す）
     const error = new Error("Network error");
     mockedAxios.get.mockRejectedValue(error);
-
-    // DOMParserのモックを設定
-    mockDOMParser.mockImplementation(() => ({
-      parseFromString: jest
-        .fn()
-        .mockReturnValue(new Error("Failed to fetch the document: " + error)),
-    }));
 
     // 関数を実行
     const result = await updateSubscription(subscription);

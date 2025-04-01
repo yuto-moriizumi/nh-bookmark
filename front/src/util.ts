@@ -6,7 +6,8 @@ const TAG_JAPANESE = "6346";
 async function getDocument(url: string) {
   try {
     const { data } = await axios.get(url);
-    return new DOMParser().parseFromString(data, "text/html");
+    const result = new DOMParser().parseFromString(data, "text/html");
+    return result;
   } catch (error) {
     return new Error("Failed to fetch the document: " + error);
   }
