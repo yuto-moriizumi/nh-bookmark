@@ -10,13 +10,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Custom plugin to handle manifest.json transformation
-const manifestPlugin = (): Plugin => { // 戻り値の型を Plugin に指定
+const manifestPlugin = (): Plugin => {
+  // 戻り値の型を Plugin に指定
   return {
     name: "manifest-transform",
-    buildStart(this: import('rollup').PluginContext) { // this の型を import('rollup').PluginContext に変更
+    buildStart(this: import("rollup").PluginContext) {
       this.addWatchFile(resolve("src/manifest.json"));
     },
-    generateBundle(this: import('rollup').PluginContext) { // this の型を import('rollup').PluginContext に変更
+    generateBundle(this: import("rollup").PluginContext) {
       const manifestPath = resolve("src/manifest.json");
       const manifestContent = fs.readFileSync(manifestPath, "utf-8");
       const manifest = JSON.parse(manifestContent);
@@ -25,19 +26,25 @@ const manifestPlugin = (): Plugin => { // 戻り値の型を Plugin に指定
       const url = process.env.URL;
       if (!url) {
         // URL環境変数が未定義の場合、エラーを投げる
-        this.error("Environment variable 'URL' is not defined. Please check your .env file.");
+        this.error(
+          "Environment variable 'URL' is not defined. Please check your .env file.",
+        );
         return; // エラーが発生したら処理を中断
       }
       manifest.host_permissions = [url];
 
       // content_scripts が存在し、配列であることを確認
-      if (Array.isArray(manifest.content_scripts) && manifest.content_scripts.length > 0) {
+      if (
+        Array.isArray(manifest.content_scripts) &&
+        manifest.content_scripts.length > 0
+      ) {
         manifest.content_scripts[0].matches = [url];
       } else {
         // content_scripts がない、または空の場合は警告を出す
-        this.warn("manifest.json does not contain 'content_scripts' array or it is empty.");
+        this.warn(
+          "manifest.json does not contain 'content_scripts' array or it is empty.",
+        );
       }
-
 
       this.emitFile({
         type: "asset",
@@ -96,6 +103,10 @@ export default defineConfig(({ mode }) => {
       // since parsing CSS is slow
       css: true,
       exclude: [...configDefaults.exclude, "**/build/**"],
+      coverage: {
+        /** For npm workspaces. https://github.com/vitest-dev/vitest/issues/7203 */
+        excludeAfterRemap: true,
+      },
     } satisfies UserConfig["test"],
   };
 });
