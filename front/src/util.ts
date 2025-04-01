@@ -4,8 +4,12 @@ import { Subscription } from "./types";
 const TAG_JAPANESE = "6346";
 
 async function getDocument(url: string) {
-  const { data } = await axios.get(url);
-  return new DOMParser().parseFromString(data, "text/html");
+  try {
+    const { data } = await axios.get(url);
+    return new DOMParser().parseFromString(data, "text/html");
+  } catch (error) {
+    return new Error("Failed to fetch the document: " + error);
+  }
 }
 
 function updateCheckedAt(subscription: Subscription) {
