@@ -40,7 +40,9 @@ describe('Modal Component', () => {
     );
     
     // Find the backdrop (MUI adds a backdrop div with role="presentation")
-    const backdrop = screen.getByRole('presentation').firstChild;
+    // Use { hidden: true } to find elements that are hidden from accessibility tree
+    const modalElement = screen.getByRole('presentation', { hidden: true });
+    const backdrop = modalElement.querySelector('.MuiBackdrop-root');
     expect(backdrop).toBeInTheDocument();
     
     // Click the backdrop
