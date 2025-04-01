@@ -1,7 +1,8 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: "ts-jest",
-  testEnvironment: "jsdom",
+  /** https://mswjs.io/docs/faq/#requestresponsetextencoder-is-not-defined-jest */
+  testEnvironment: "jest-fixed-jsdom",
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
   },

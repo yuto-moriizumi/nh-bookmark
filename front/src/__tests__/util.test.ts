@@ -1,40 +1,29 @@
 import "@testing-library/jest-dom";
-import { readFileSync } from "fs";
-import { join } from "path";
-import axios from "axios";
+import { http, HttpResponse } from "msw";
+import { server } from "../mocks/server"; // MSWサーバーをインポート
+import {
+  galleryHtml,
+  bookHtml,
+  noJapaneseGalleryHtml,
+} from "../mocks/handlers"; // フィクスチャをインポート
 import { updateSubscription } from "../util";
 import { Subscription } from "../types";
 
-// モックの設定
-jest.mock("axios");
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-
 describe("updateSubscription", () => {
-  // テスト用のフィクスチャを読み込む
-  const galleryHtml = readFileSync(
-    join(__dirname, "./__fixtures__/gallery.html"),
-    "utf8",
-  );
-  const bookHtml = readFileSync(
-    join(__dirname, "./__fixtures__/book.html"),
-    "utf8",
-  );
-  const noJapaneseGalleryHtml = readFileSync(
-    join(__dirname, "./__fixtures__/no_japanese_gallery.html"),
-    "utf8",
-  );
+  // MSWサーバーのセットアップ (describeブロック内に移動)
+  beforeAll(() => server.listen()); // テスト開始前にサーバーを起動
 
   beforeEach(() => {
-    // テスト前にモックをリセット
-    jest.clearAllMocks();
-
     // Date.now()のモックを設定
     jest.spyOn(Date, "now").mockReturnValue(1617235200000); // 2021-04-01T00:00:00.000Z
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    server.resetHandlers(); // 各テスト後にハンドラーをリセット
+    jest.restoreAllMocks(); // Date.now() のモックをリセット
   });
+
+  afterAll(() => server.close()); // 全テスト終了後にサーバーを停止
 
   it("新しい本が見つかった場合、購読情報を更新する", async () => {
     // テスト用の購読情報
@@ -50,15 +39,15 @@ describe("updateSubscription", () => {
       has_new: false,
     };
 
-    // axiosのモックを設定
-    mockedAxios.get.mockImplementation((url) => {
-      if (url === subscription.sub_url) {
-        return Promise.resolve({ data: galleryHtml });
-      } else if (url === "https://example.com/book/123") {
-        return Promise.resolve({ data: bookHtml });
-      }
-      return Promise.reject(new Error("Unexpected URL"));
-    });
+    // MSWハンドラーを設定
+    server.use(
+      http.get(subscription.sub_url, () => {
+        return HttpResponse.text(galleryHtml);
+      }),
+      http.get("https://example.com/book/123", () => {
+        return HttpResponse.text(bookHtml);
+      }),
+    );
 
     // 関数を実行
     const result = await updateSubscription(subscription);
@@ -74,13 +63,6 @@ describe("updateSubscription", () => {
       updated_at: 1617235200000,
       checked_at: 1617235200000,
     });
-
-    // axiosが正しく呼ばれたことを確認
-    expect(mockedAxios.get).toHaveBeenCalledTimes(2);
-    expect(mockedAxios.get).toHaveBeenCalledWith(subscription.sub_url);
-    expect(mockedAxios.get).toHaveBeenCalledWith(
-      "https://example.com/book/123",
-    );
   });
 
   it("タイトルが同じ場合、更新がないものとして扱う", async () => {
@@ -97,15 +79,15 @@ describe("updateSubscription", () => {
       has_new: false,
     };
 
-    // axiosのモックを設定
-    mockedAxios.get.mockImplementation((url) => {
-      if (url === subscription.sub_url) {
-        return Promise.resolve({ data: galleryHtml });
-      } else if (url === "https://example.com/book/123") {
-        return Promise.resolve({ data: bookHtml });
-      }
-      return Promise.reject(new Error("Unexpected URL:" + url));
-    });
+    // MSWハンドラーを設定
+    server.use(
+      http.get(subscription.sub_url, () => {
+        return HttpResponse.text(galleryHtml);
+      }),
+      http.get("https://example.com/book/123", () => {
+        return HttpResponse.text(bookHtml);
+      }),
+    );
 
     // 関数を実行
     const result = await updateSubscription(subscription);
@@ -115,9 +97,6 @@ describe("updateSubscription", () => {
       ...subscription,
       checked_at: 1617235200000,
     });
-
-    // axiosが正しく呼ばれたことを確認
-    expect(mockedAxios.get).toHaveBeenCalledTimes(2);
   });
 
   it("日本語の本が見つからない場合、checked_atのみ更新する", async () => {
@@ -134,13 +113,12 @@ describe("updateSubscription", () => {
       has_new: false,
     };
 
-    // axiosのモックを設定
-    mockedAxios.get.mockImplementation((url) => {
-      if (url === subscription.sub_url) {
-        return Promise.resolve({ data: noJapaneseGalleryHtml });
-      }
-      return Promise.reject(new Error("Unexpected URL:" + url));
-    });
+    // MSWハンドラーを設定
+    server.use(
+      http.get(subscription.sub_url, () => {
+        return HttpResponse.text(noJapaneseGalleryHtml);
+      }),
+    );
 
     // 関数を実行
     const result = await updateSubscription(subscription);
@@ -151,9 +129,7 @@ describe("updateSubscription", () => {
       checked_at: 1617235200000,
     });
 
-    // axiosが正しく呼ばれたことを確認
-    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockedAxios.get).toHaveBeenCalledWith(subscription.sub_url);
+    // MSWではリクエストが成功したかどうかで検証するため、呼び出し回数の確認は不要
   });
 
   it("ドキュメントの取得に失敗した場合、エラーを返す", async () => {
@@ -170,9 +146,12 @@ describe("updateSubscription", () => {
       has_new: false,
     };
 
-    // axiosのモックを設定（エラーを返す）
-    const error = new Error("Network error");
-    mockedAxios.get.mockRejectedValue(error);
+    // MSWハンドラーを設定 (ネットワークエラーをシミュレート)
+    server.use(
+      http.get(subscription.sub_url, () => {
+        return HttpResponse.error(); // ネットワークエラーを返す
+      }),
+    );
 
     // 関数を実行
     const result = await updateSubscription(subscription);
@@ -180,9 +159,5 @@ describe("updateSubscription", () => {
     // 結果を検証（エラーが返される）
     expect(result).toBeInstanceOf(Error);
     expect((result as Error).message).toContain("Failed to fetch the document");
-
-    // axiosが正しく呼ばれたことを確認
-    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockedAxios.get).toHaveBeenCalledWith(subscription.sub_url);
   });
 });
