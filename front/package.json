@@ -6,7 +6,10 @@
   "scripts": {
     "build": "vite build --mode production",
     "dev": "vite build --mode development --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   },
   "author": "",
   "license": "ISC",
@@ -21,12 +24,21 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
     "@tsconfig/recommended": "^1.0.8",
+    "@types/jsdom": "^21.1.7",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/ui": "^3.1.1",
     "dotenv": "^16.4.7",
+    "identity-obj-proxy": "^3.0.0",
+    "jsdom": "^26.0.0",
+    "msw": "^2.7.3",
     "vite": "^6.2.4",
-    "vite-plugin-zip-pack": "^1.2.4"
+    "vite-plugin-zip-pack": "^1.2.4",
+    "vitest": "^3.1.1"
   }
 }

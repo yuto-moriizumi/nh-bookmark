@@ -4,8 +4,13 @@ import { Subscription } from "./types";
 const TAG_JAPANESE = "6346";
 
 async function getDocument(url: string) {
-  const { data } = await axios.get(url);
-  return new DOMParser().parseFromString(data, "text/html");
+  try {
+    const { data } = await axios.get(url);
+    const result = new DOMParser().parseFromString(data, "text/html");
+    return result;
+  } catch (error) {
+    return new Error("Failed to fetch the document: " + error);
+  }
 }
 
 function updateCheckedAt(subscription: Subscription) {
@@ -26,8 +31,8 @@ export async function updateSubscription(subscription: Subscription) {
     );
     if (!book) return updateCheckedAt(subscription);
 
-    const anchor = book.firstChild as HTMLAnchorElement;
-    const bookUrl = anchor.href;
+    const anchor = book.querySelector("a") as HTMLAnchorElement;
+    const bookUrl = anchor?.getAttribute("href") || "";
 
     // 本のページを開く
     const document = await getDocument(bookUrl);
