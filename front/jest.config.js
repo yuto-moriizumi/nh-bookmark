@@ -12,8 +12,8 @@ module.exports = {
     }],
   },
   testMatch: [
-    '**/__tests__/**/*.test.[jt]s?(x)',
-    '**/?(*.)+(spec|test).[jt]s?(x)'
+    '<rootDir>/**/__tests__/**/*.test.[jt]s?(x)',
+    '<rootDir>/**/?(*.)+(spec|test).[jt]s?(x)'
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
