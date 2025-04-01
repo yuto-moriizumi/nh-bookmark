@@ -60,6 +60,7 @@ export const AddSubscriptionModal = (props: Props) => {
           <Rating
             value={rank}
             onChange={(_, v) => setRate(v ?? DEFAULT_RANK)}
+            getLabelText={(value: number) => `${value}つ星`}
           />
           <Button onClick={() => addSubscription.mutate()}>Submit</Button>
         </Stack>
