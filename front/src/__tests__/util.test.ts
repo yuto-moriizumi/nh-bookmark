@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
 import "@testing-library/jest-dom";
 import { http, HttpResponse } from "msw";
 import { server } from "../mocks/server"; // MSWサーバーをインポート
@@ -15,12 +16,12 @@ describe("updateSubscription", () => {
 
   beforeEach(() => {
     // Date.now()のモックを設定
-    jest.spyOn(Date, "now").mockReturnValue(1617235200000); // 2021-04-01T00:00:00.000Z
+    vi.spyOn(Date, "now").mockReturnValue(1617235200000); // 2021-04-01T00:00:00.000Z
   });
 
   afterEach(() => {
     server.resetHandlers(); // 各テスト後にハンドラーをリセット
-    jest.restoreAllMocks(); // Date.now() のモックをリセット
+    vi.restoreAllMocks(); // Date.now() のモックをリセット
   });
 
   afterAll(() => server.close()); // 全テスト終了後にサーバーを停止

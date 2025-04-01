@@ -2,32 +2,39 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddSubscriptionModal } from "../AddSubscriptionModal";
+import { vi, describe, it, expect, beforeEach, Mock } from 'vitest';
 import { DEFAULT_RANK } from "../SubscriptionCard";
 import * as util from "../../util";
+import { client, queryClient } from '../index'; // Import directly
 
 // Mock the updateSubscription function
-jest.mock("../../util", () => ({
-  updateSubscription: jest.fn(),
+vi.mock("../../util", () => ({
+  updateSubscription: vi.fn(),
 }));
 
 // Mock the queryClient and client
-jest.mock("../index", () => ({
-  queryClient: {
-    setQueryData: jest.fn(),
-  },
-  client: {
-    post: jest.fn().mockResolvedValue({ data: {} }),
-  },
-}));
+vi.mock("../index", async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../index')>();
+  return {
+    ...actual,
+    queryClient: {
+      setQueryData: vi.fn(),
+    },
+    client: {
+      post: vi.fn().mockResolvedValue({ data: {} }),
+    },
+  };
+});
+
 
 // Mock the MutationSnackbar component
-jest.mock("../MutationSnackbar", () => ({
-  MutationSnackbar: jest.fn(() => null),
+vi.mock("../MutationSnackbar", () => ({
+  MutationSnackbar: vi.fn(() => null),
 }));
 
 // Mock the Modal component
-jest.mock("../Modal", () => ({
-  Modal: jest.fn(({ children, open, onClose }) =>
+vi.mock("../Modal", () => ({
+  Modal: vi.fn(({ children, open, onClose }) =>
     open ? ( // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <div data-testid="modal" onClick={onClose}>
         {children}
@@ -39,18 +46,18 @@ jest.mock("../Modal", () => ({
 describe.skip("AddSubscriptionModal Component", () => {
   const mockProps = {
     open: true,
-    onClose: jest.fn(),
+    onClose: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Mock document.URL
     Object.defineProperty(document, "URL", {
       value: "https://example.com/test",
       writable: true,
     });
     // Mock successful updateSubscription
-    (util.updateSubscription as jest.Mock).mockResolvedValue({
+    (util.updateSubscription as Mock).mockResolvedValue({
       sub_url: "https://example.com/test",
       rank: DEFAULT_RANK,
       has_new: true,
@@ -108,8 +115,7 @@ describe.skip("AddSubscriptionModal Component", () => {
   });
 
   it("calls updateSubscription and client.post when Submit button is clicked", async () => {
-    const { client } = jest.requireMock("../index");
-    const { queryClient } = jest.requireMock("../index");
+    // Use the directly imported mocked versions
     const user = userEvent.setup();
 
     render(<AddSubscriptionModal {...mockProps} />);
@@ -144,7 +150,7 @@ describe.skip("AddSubscriptionModal Component", () => {
   it("handles error from updateSubscription", async () => {
     // Mock updateSubscription to return an error
     const mockError = new Error("Test error");
-    (util.updateSubscription as jest.Mock).mockResolvedValue(mockError);
+    (util.updateSubscription as Mock).mockResolvedValue(mockError);
 
     const user = userEvent.setup();
 

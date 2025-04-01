@@ -1,3 +1,4 @@
+import { vi, describe, it, expect } from 'vitest';
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -13,7 +14,7 @@ const createMockMutation = (
     isPending: status === "pending",
     isSuccess: status === "success",
     isError: status === "error",
-    reset: jest.fn(),
+    reset: vi.fn(),
   };
 };
 

@@ -2,26 +2,32 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SubscriptionCard, DEFAULT_RANK } from "../SubscriptionCard";
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { OptionalSubscription } from "../../types";
+import { client } from '../index'; // Import directly
 
 // Mock the queryClient and client
-jest.mock("../index", () => ({
-  queryClient: {
-    setQueryData: jest.fn(),
-  },
-  client: {
-    post: jest.fn().mockResolvedValue({ data: {} }),
-  },
-}));
+vi.mock("../index", async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../index')>();
+  return {
+    ...actual,
+    queryClient: {
+      setQueryData: vi.fn(),
+    },
+    client: {
+      post: vi.fn().mockResolvedValue({ data: {} }),
+    },
+  };
+});
 
 // Mock the MutationSnackbar component
-jest.mock("../MutationSnackbar", () => ({
-  MutationSnackbar: jest.fn(() => null),
+vi.mock("../MutationSnackbar", () => ({
+  MutationSnackbar: vi.fn(() => null),
 }));
 
 // Mock the Modal component
-jest.mock("../Modal", () => ({
-  Modal: jest.fn(({ children }) => <div data-testid="modal">{children}</div>),
+vi.mock("../Modal", () => ({
+  Modal: vi.fn(({ children }) => <div data-testid="modal">{children}</div>),
 }));
 
 describe.skip("SubscriptionCard Component", () => {
@@ -34,7 +40,7 @@ describe.skip("SubscriptionCard Component", () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("renders subscription details correctly", () => {
@@ -89,8 +95,7 @@ describe.skip("SubscriptionCard Component", () => {
   });
 
   it("calls updateNew mutation when NEW/READ button is clicked", async () => {
-    // Import client from the mock
-    const { client } = jest.requireMock("../index");
+    // Use the directly imported mocked client
     const user = userEvent.setup();
 
     render(<SubscriptionCard subscription={mockSubscription} />);
@@ -107,8 +112,7 @@ describe.skip("SubscriptionCard Component", () => {
   });
 
   it("calls updateRank mutation when rating is changed", async () => {
-    // Import client from the mock
-    const { client } = jest.requireMock("../index");
+    // Use the directly imported mocked client
     const user = userEvent.setup();
 
     render(<SubscriptionCard subscription={mockSubscription} />);
@@ -125,8 +129,7 @@ describe.skip("SubscriptionCard Component", () => {
   });
 
   it("calls deleteSubscription mutation when delete is confirmed", async () => {
-    // Import client from the mock
-    const { client } = jest.requireMock("../index");
+    // Use the directly imported mocked client
     const user = userEvent.setup();
 
     render(<SubscriptionCard subscription={mockSubscription} />);

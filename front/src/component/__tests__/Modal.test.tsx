@@ -1,11 +1,12 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Modal } from '../Modal';
 
 describe('Modal Component', () => {
-  const mockOnClose = jest.fn();
-  
+  const mockOnClose = vi.fn();
+
   beforeEach(() => {
     mockOnClose.mockClear();
   });
