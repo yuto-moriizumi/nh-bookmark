@@ -1,7 +1,6 @@
-import { Fab, Grid, Modal, Typography } from "@mui/material";
+import { Grid, Modal } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { SubscriptionCard } from "./SubscriptionCard";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { updateSubscription } from "../util";
 import { Subscription, SubscriptionResponce } from "../types";
 import { queryClient, client } from ".";
@@ -16,27 +15,27 @@ async function getSubscriptions() {
   return res.data.subscriptions;
 }
 
-const updating = new Set<string>();
+async function update(subscriptions: Subscription[]) {
+  // checked_atが古い順にソート
+  const sortedData = subscriptions.sort((a, b) => a.checked_at - b.checked_at);
+  for (const item of sortedData) {
+    // 最後のチェックがSKIP_CHECK_THRESHOLD時間以内の場合は処理を終了
+    if (Date.now() - item.checked_at < SKIP_CHECK_THRESHOLD) break;
 
-async function update(data: Subscription[] | undefined) {
-  if (!data) return;
-  const minUpdatedAtItem = data
-    .filter((i) => !updating.has(i.sub_url))
-    .reduce(
-      (acc, curr) => (curr.checked_at < acc.checked_at ? curr : acc),
-      data[0],
+    const subscription = await updateSubscription(item);
+    if (subscription instanceof Error) throw subscription;
+
+    queryClient.setQueryData<Subscription[]>(["subscriptions"], (prev) =>
+      prev
+        ? prev.map((s) =>
+            s.sub_url === subscription.sub_url ? subscription : s,
+          )
+        : prev,
     );
-  if (Date.now() - minUpdatedAtItem.checked_at < SKIP_CHECK_THRESHOLD) return;
-  updating.add(minUpdatedAtItem.sub_url);
-  const subscription = await updateSubscription(minUpdatedAtItem);
-  updating.delete(minUpdatedAtItem.sub_url);
-  if (subscription instanceof Error) throw subscription;
-  queryClient.setQueryData<Subscription[]>(["subscriptions"], (prev) =>
-    prev
-      ? prev.map((s) => (s.sub_url === subscription.sub_url ? subscription : s))
-      : prev,
-  );
-  return client.post<Subscription>("/subscriptions", subscription);
+    await client.post<Subscription>("/subscriptions", subscription);
+
+    await new Promise((resolve) => setTimeout(resolve, UPDATE_INTERVAL_MS));
+  }
 }
 
 export function FavoritesModal(props: { open: boolean; onClose: () => void }) {
@@ -45,46 +44,26 @@ export function FavoritesModal(props: { open: boolean; onClose: () => void }) {
     queryFn: getSubscriptions,
   });
   const [isAutoUpdateInitiated, setIsAutoUpdateInitiated] = useState(false);
+
   useEffect(() => {
-    if (isAutoUpdateInitiated || !data) return;
+    // Start auto-update only once when data is available
+    if (isAutoUpdateInitiated || !data || data.length === 0) return;
     setIsAutoUpdateInitiated(true);
-    (async () => {
-      for (let i = 0; i < data.length; i++) {
-        await update(data);
-        await new Promise((resolve) => setTimeout(resolve, UPDATE_INTERVAL_MS));
-      }
-    })();
-  }, [data, isAutoUpdateInitiated]);
+    // Initial call to start the update chain
+    update(data);
+  }, [data, isAutoUpdateInitiated]); // Dependency array remains the same
 
   return (
     <Modal {...props} sx={{ overflowY: "scroll" }}>
-      <>
-        <Grid container spacing={1} columns={24}>
-          {(data ?? [])
-            .sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))
-            .map((s) => (
-              <Grid
-                key={s.sub_url}
-                size={{ xs: 24, sm: 8, md: 6, lg: 4, xl: 3 }}
-              >
-                <SubscriptionCard subscription={s} />
-              </Grid>
-            ))}
-        </Grid>
-        <Fab
-          variant="extended"
-          color="primary"
-          sx={{
-            position: "fixed",
-            bottom: "5px",
-            right: "5px",
-          }}
-          onClick={() => update(data)}
-        >
-          <RefreshIcon />
-          <Typography>Update</Typography>
-        </Fab>
-      </>
+      <Grid container spacing={1} columns={24}>
+        {(data ?? [])
+          .sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))
+          .map((s) => (
+            <Grid key={s.sub_url} size={{ xs: 24, sm: 8, md: 6, lg: 4, xl: 3 }}>
+              <SubscriptionCard subscription={s} />
+            </Grid>
+          ))}
+      </Grid>
     </Modal>
   );
 }
