@@ -86,11 +86,11 @@ export const SubscriptionCard = (props: Props) => {
           success: "既読を更新しました",
           pending: "既読を更新しています...",
           error: "既読を更新に失敗しました",
-        }}
-      />
-      <Card sx={{ height: "100%" }}>
-        <CardActionArea href={sub_url}>
-          <img
+         }}
+       />
+       <Card sx={{ height: "100%" }} role="article"> {/* Add role="article" */}
+         <CardActionArea href={sub_url}>
+           <img
             src={image || ""}
             referrerPolicy="no-referrer"
             alt={sub_url}

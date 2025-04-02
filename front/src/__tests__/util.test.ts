@@ -1,12 +1,21 @@
-import { vi, describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
+import {
+  vi,
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterEach,
+  afterAll,
+} from "vitest";
 import "@testing-library/jest-dom";
 import { http, HttpResponse } from "msw";
-import { server } from "../mocks/server"; // MSWサーバーをインポート
+import { server } from "../__mocks__/server"; // MSWサーバーをインポート
 import {
   galleryHtml,
   bookHtml,
   noJapaneseGalleryHtml,
-} from "../mocks/handlers"; // フィクスチャをインポート
+} from "../__mocks__/handlers"; // フィクスチャをインポート
 import { updateSubscription } from "../util";
 import { Subscription } from "../types";
 

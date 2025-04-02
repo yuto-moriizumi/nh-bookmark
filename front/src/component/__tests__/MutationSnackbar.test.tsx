@@ -1,7 +1,6 @@
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, act } from "@testing-library/react";
 import { MutationSnackbar } from "../MutationSnackbar";
 
 // Mock mutation states
@@ -18,7 +17,16 @@ const createMockMutation = (
   };
 };
 
-describe.skip("MutationSnackbar Component", () => {
+describe("MutationSnackbar Component", () => {
+  // Use fake timers to control setTimeout for autoHideDuration
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   const messages = {
     success: "Success message",
     pending: "Pending message",
@@ -65,8 +73,7 @@ describe.skip("MutationSnackbar Component", () => {
     expect(screen.getByText("Error message")).toBeInTheDocument();
   });
 
-  it("calls reset when closed after success", async () => {
-    const user = userEvent.setup();
+  it("calls reset when closed after success", () => {
     const mockMutation = createMockMutation("success");
 
     render(
@@ -74,18 +81,16 @@ describe.skip("MutationSnackbar Component", () => {
       <MutationSnackbar mutation={mockMutation as any} message={messages} />,
     );
 
-    // Find the close button
-    const closeButton = screen.getByRole("button", { name: /close/i });
+    // Advance timer to trigger autoHideDuration within act
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
 
-    // Click the close button
-    await user.click(closeButton);
-
-    // Check if reset was called
+    // Check if reset was called via onClose
     expect(mockMutation.reset).toHaveBeenCalledTimes(1);
   });
 
-  it("calls reset when closed after error", async () => {
-    const user = userEvent.setup();
+  it("calls reset when closed after error", () => {
     const mockMutation = createMockMutation("error");
 
     render(
@@ -93,18 +98,16 @@ describe.skip("MutationSnackbar Component", () => {
       <MutationSnackbar mutation={mockMutation as any} message={messages} />,
     );
 
-    // Find the close button
-    const closeButton = screen.getByRole("button", { name: /close/i });
+    // Advance timer to trigger autoHideDuration within act
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
 
-    // Click the close button
-    await user.click(closeButton);
-
-    // Check if reset was called
+    // Check if reset was called via onClose
     expect(mockMutation.reset).toHaveBeenCalledTimes(1);
   });
 
-  it("does not call reset when closed during pending state", async () => {
-    const user = userEvent.setup();
+  it("does not call reset when closed during pending state", () => {
     const mockMutation = createMockMutation("pending");
 
     render(
@@ -112,13 +115,12 @@ describe.skip("MutationSnackbar Component", () => {
       <MutationSnackbar mutation={mockMutation as any} message={messages} />,
     );
 
-    // Find the close button
-    const closeButton = screen.getByRole("button", { name: /close/i });
+    // Advance timer to trigger autoHideDuration within act
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
 
-    // Click the close button
-    await user.click(closeButton);
-
-    // Check that reset was not called
+    // Check that reset was not called (onClose shouldn't call reset in pending state)
     expect(mockMutation.reset).not.toHaveBeenCalled();
   });
 });

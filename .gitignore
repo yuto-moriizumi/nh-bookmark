@@ -3,3 +3,4 @@ build
 .serverless
 .webpack
 .env
+coverage
