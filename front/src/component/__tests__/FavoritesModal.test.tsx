@@ -4,7 +4,16 @@ import { FavoritesModal } from "../FavoritesModal";
 import { server } from "../../__mocks__/server";
 import { http, HttpResponse } from "msw";
 import { Subscription } from "../../types";
-import { vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from "vitest";
 
 const queryClient = new QueryClient({
   defaultOptions: {
