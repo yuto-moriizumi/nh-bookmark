@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { FavoritesModal } from "../FavoritesModal";
-import { server } from "../../mocks/server";
+import { server } from "../../__mocks__/server";
 import { http, HttpResponse } from "msw";
 import { Subscription } from "../../types";
 import { vi } from "vitest";
@@ -46,7 +46,6 @@ const updatedSubscriptionData = {
   has_new: true,
 };
 
-
 vi.mock("../../util", () => ({
   updateSubscription: vi.fn(async (sub: Subscription) => {
     if (sub.sub_url === mockSubscriptions[0].sub_url) {
@@ -68,7 +67,6 @@ vi.mock("../../util", () => ({
     return Promise.resolve(sub);
   }),
 }));
-
 
 let updateSubscription: typeof import("../../util").updateSubscription;
 

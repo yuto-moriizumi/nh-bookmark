@@ -107,6 +107,10 @@ export default defineConfig(({ mode }) => {
       coverage: {
         /** For npm workspaces. https://github.com/vitest-dev/vitest/issues/7203 */
         excludeAfterRemap: true,
+        exclude: [
+          ...(configDefaults.coverage.exclude ?? []),
+          "**/__mocks__/**",
+        ],
       },
     } satisfies UserConfig["test"],
   };
