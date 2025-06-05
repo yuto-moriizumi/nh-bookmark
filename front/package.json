@@ -40,6 +40,6 @@
     "msw": "^2.8.6",
     "vite": "^6.3.5",
     "vite-plugin-zip-pack": "^1.2.4",
-    "vitest": "^3.2.1"
+    "vitest": "^3.2.2"
   }
 }
