@@ -38,7 +38,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jsdom": "^27.0.0",
     "msw": "^2.11.2",
-    "vite": "^7.1.5",
+    "vite": "^7.1.6",
     "vite-plugin-zip-pack": "^1.2.4",
     "vitest": "^3.2.4"
   }
